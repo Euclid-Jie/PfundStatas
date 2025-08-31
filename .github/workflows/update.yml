@@ -12,12 +12,12 @@ jobs:
       TZ: 'Asia/Shanghai'  # 设置时区为上海
 
     steps:
-      # Checkout main branch to get the latest code
+      # Checkout master branch to get the latest code
       - uses: actions/checkout@v3
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: main  # Checkout main branch
+          ref: master  # Checkout master branch
 
       - name: Update submodules
         run: git submodule update --init
@@ -49,4 +49,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.REPO_TOKEN }}
-          branch: main
+          branch: master

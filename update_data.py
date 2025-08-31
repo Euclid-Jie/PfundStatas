@@ -37,6 +37,9 @@ del bench_basic_data["managerName"]
 bench_basic_data = bench_basic_data.groupby(
     ["year", "month", "管理人简称"], as_index=False
 )["record_count"].sum()
+bench_basic_data.sort_values(
+    by=["year", "month", "record_count"], ascending=[False, False, False], inplace=True
+)
 bench_basic_data.rename(columns={"管理人简称": "ManagerShortName"}, inplace=True)
 bench_basic_data.to_json("data.json", orient="records", force_ascii=False, indent=4)
 
@@ -66,6 +69,6 @@ p_info[
 
 AutoEmail(
     EmailParams(
-        title="wuyu网页已更新", content="https://euclid-jie.github.io/observe_wuyu/"
+        title="wuyu网页已更新", content="https://euclid-jie.github.io/PfundStatas/"
     )
 )
