@@ -75,16 +75,21 @@ function queryCompanyData() {
 }
 // 下载表格为CSV的函数
 function downloadTableAsCSV() {
-    const table = document.getElementById('managerTable');
-    let csv = '';
-    for (let row of table.rows) {
-        let rowData = [];
-        for (let cell of row.cells) {
-            rowData.push('"' + cell.innerText.replace(/"/g, '""') + '"');
-        }
-        csv += rowData.join(',') + '\n';
-    }
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // 使用全量 data 数组生成 CSV
+    const headers = ['年份', '月份', '管理人简称', '备案数量'];
+    let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+    data.forEach(item => {
+        const row = [
+            item.year,
+            item.month,
+            item.ManagerShortName,
+            item.record_count
+        ].map(val => `"${(val !== undefined && val !== null) ? String(val).replace(/"/g, '""') : ''}"`);
+        csv += row.join(',') + '\n';
+    });
+    // 添加 UTF-8 BOM 以防止中文乱码
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
