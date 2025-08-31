@@ -16,7 +16,7 @@ with engine.connect() as connection:
             FROM 
                 UpdatedData.raw_pfund_info rpi
             WHERE 
-                rpi.putOnRecordDate >= '2025-08-01' 
+                rpi.putOnRecordDate >= '2025-07-01' 
             GROUP BY 
                 managerName, 
                 YEAR(rpi.putOnRecordDate),
@@ -50,12 +50,12 @@ with engine.connect() as connection:
             from
                 UpdatedData.raw_pfund_info rpi
             where
-                rpi.putOnRecordDate >= "2025-08-01"
+                rpi.putOnRecordDate >= "2025-07-01"
             order by
                 rpi.putOnRecordDate""",
         engine,
     )
-p_info[
+p_info.sort_values(by=["putOnRecordDate"], ascending=False)[
     [
         "fundNo",
         "fundName",

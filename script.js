@@ -15,10 +15,18 @@ function queryCompanyData() {
     fetch('monthlyData.json')
         .then(response => response.json())
         .then(data => {
-            const results = data.filter(item => 
-                item.managerName.includes(company) && 
-                new Date(Number(item.putOnRecordDate)).getMonth() === new Date().getMonth()
-            );
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const results = data.filter(item => {
+                if (!item.putOnRecordDate) return false;
+                const date = new Date(Number(item.putOnRecordDate));
+                const itemYear = date.getFullYear();
+                const itemMonth = date.getMonth();
+                // 计算距今几个月
+                const monthsDiff = (currentYear - itemYear) * 12 + (currentMonth - itemMonth);
+                return item.managerName.includes(company) && monthsDiff >= 0 && monthsDiff <= 2;
+            });
             const resultsDiv = document.getElementById('queryResults');
             if (results.length === 0) {
                 resultsDiv.innerHTML = "<p>未查询到相关数据</p>";
