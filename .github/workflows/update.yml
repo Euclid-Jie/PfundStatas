@@ -1,0 +1,52 @@
+name: 网页更新
+
+on:
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '30 0 * * 1'  # 每周一早上8:30:00执行一次
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'  # 设置时区为上海
+
+    steps:
+      # Checkout main branch to get the latest code
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: main  # Checkout main branch
+
+      - name: Update submodules
+        run: git submodule update --init
+
+      - name: Set timestamp
+        id: timestamp
+        run: echo "timestamp=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+
+      # update display for 1d schedule
+      - name: update display
+        env:
+          SQL_PASSWORDS: ${{ secrets.SQL_PASSWORDS }}
+          SQL_HOST: ${{ secrets.SQL_HOST }}
+          SEND: ${{ secrets.SEND }}
+          PASS: ${{ secrets.PASS }}
+          RECV: ${{ secrets.RECV }}
+        run: |
+          pip install -r ./requirements.txt
+          python3 ./update_data.py
+
+      - name: Git config and commit
+        run: |
+          git config --global user.email "ouweijie123@outlook.com"
+          git config --global user.name "update actioner"
+          git add .
+          git commit -m "update_${{ env.timestamp }}" || echo "No changes to commit"
+
+      - name: GitHub Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.REPO_TOKEN }}
+          branch: main

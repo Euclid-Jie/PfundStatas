@@ -1,9 +1,10 @@
 import pandas as pd
 import sqlalchemy
 from config import SQL_PASSWORDS, SQL_HOST
+from AutoEmail import AutoEmail, EmailParams
 
 engine = sqlalchemy.create_engine(
-    f"mysql+pymysql://dev:{SQL_PASSWORDS}@{SQL_HOST}:3306/UpdatedData?charset=utf8"
+    f"mysql+pymysql://dev:{SQL_PASSWORDS}@{SQL_HOST}:3306?charset=utf8"
 )
 with engine.connect() as connection:
     bench_basic_data = pd.read_sql_query(
@@ -23,9 +24,21 @@ with engine.connect() as connection:
             ORDER BY record_count DESC""",
         engine,
     )
-bench_basic_data[bench_basic_data["record_count"] >= 5].to_json(
-    "data.json", orient="records", force_ascii=False, indent=4
+company_info = pd.read_sql_query("SELECT * FROM Euclid.量化私募管理人列表", engine)
+bench_basic_data = bench_basic_data.merge(
+    company_info[["协会名称", "管理人简称"]],
+    how="left",
+    left_on="managerName",
+    right_on="协会名称",
 )
+bench_basic_data = bench_basic_data[bench_basic_data["管理人简称"].notna()]
+del bench_basic_data["协会名称"]
+del bench_basic_data["managerName"]
+bench_basic_data = bench_basic_data.groupby(
+    ["year", "month", "管理人简称"], as_index=False
+)["record_count"].sum()
+bench_basic_data.rename(columns={"管理人简称": "ManagerShortName"}, inplace=True)
+bench_basic_data.to_json("data.json", orient="records", force_ascii=False, indent=4)
 
 with engine.connect() as connection:
     p_info = pd.read_sql_query(
@@ -50,3 +63,9 @@ p_info[
         "mandatorName",
     ]
 ].to_json("monthlyData.json", orient="records", force_ascii=False, indent=4)
+
+AutoEmail(
+    EmailParams(
+        title="wuyu网页已更新", content="https://euclid-jie.github.io/observe_wuyu/"
+    )
+)
