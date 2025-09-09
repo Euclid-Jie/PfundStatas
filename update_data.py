@@ -69,6 +69,6 @@ p_info.sort_values(by=["putOnRecordDate"], ascending=False)[
 
 AutoEmail(
     EmailParams(
-        title="wuyu网页已更新", content="https://euclid-jie.github.io/PfundStatas/"
+        title="PFund网页已更新", content="https://euclid-jie.github.io/PfundStatas/"
     )
 )
