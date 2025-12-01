@@ -3,84 +3,126 @@
         "year":2025,
         "month":11,
         "ManagerShortName":"世纪前沿",
-        "record_count":14
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"天算",
-        "record_count":11
+        "record_count":20
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"念空",
-        "record_count":11
+        "record_count":15
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"明汯",
-        "record_count":9
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"纽达",
-        "record_count":9
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"九坤",
-        "record_count":8
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"因诺",
-        "record_count":8
+        "ManagerShortName":"天算",
+        "record_count":12
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"孝庸",
-        "record_count":8
+        "record_count":12
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"进化论",
-        "record_count":8
+        "ManagerShortName":"明汯",
+        "record_count":12
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"鸣石",
-        "record_count":8
+        "ManagerShortName":"九坤",
+        "record_count":11
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"龙旗",
-        "record_count":8
+        "ManagerShortName":"蒙玺",
+        "record_count":11
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"黑翼",
-        "record_count":7
+        "record_count":11
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"龙旗",
+        "record_count":11
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"纽达",
+        "record_count":10
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"顽岩",
+        "record_count":10
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"鸣石",
+        "record_count":10
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"卓识",
-        "record_count":6
+        "record_count":9
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"因诺",
+        "record_count":9
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"翰荣",
+        "record_count":9
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"进化论",
+        "record_count":9
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"量派",
+        "record_count":8
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"博润银泰",
+        "record_count":7
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"正瀛",
+        "record_count":7
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"诚奇",
+        "record_count":7
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"半鞅",
         "record_count":6
     },
     {
@@ -98,31 +140,37 @@
     {
         "year":2025,
         "month":11,
+        "ManagerShortName":"图灵",
+        "record_count":6
+    },
+    {
+        "year":2025,
+        "month":11,
         "ManagerShortName":"大道",
         "record_count":6
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"正瀛",
+        "ManagerShortName":"茂源",
         "record_count":6
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"翰荣",
-        "record_count":6
+        "ManagerShortName":"三亚香农",
+        "record_count":5
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"蒙玺",
-        "record_count":6
+        "ManagerShortName":"倍漾",
+        "record_count":5
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"半鞅",
+        "ManagerShortName":"平方和",
         "record_count":5
     },
     {
@@ -134,20 +182,14 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"茂源",
+        "ManagerShortName":"稳博",
         "record_count":5
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"量派",
+        "ManagerShortName":"量道",
         "record_count":5
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"三亚香农",
-        "record_count":4
     },
     {
         "year":2025,
@@ -164,31 +206,43 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"图灵",
+        "ManagerShortName":"守正用奇",
         "record_count":4
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"平方和",
+        "ManagerShortName":"远澜",
         "record_count":4
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"诚奇",
-        "record_count":4
+        "ManagerShortName":"凯丰",
+        "record_count":3
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"顽岩",
-        "record_count":4
+        "ManagerShortName":"宽投",
+        "record_count":3
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"海南",
+        "record_count":3
     },
     {
         "year":2025,
         "month":11,
         "ManagerShortName":"申毅",
+        "record_count":3
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"睿凝",
         "record_count":3
     },
     {
@@ -200,25 +254,19 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"远澜",
+        "ManagerShortName":"金锝",
         "record_count":3
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"量道",
-        "record_count":3
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"凯丰",
+        "ManagerShortName":"佳期",
         "record_count":2
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"守正用奇",
+        "ManagerShortName":"千衍",
         "record_count":2
     },
     {
@@ -230,7 +278,7 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"海南",
+        "ManagerShortName":"洛书",
         "record_count":2
     },
     {
@@ -242,13 +290,7 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"睿凝",
-        "record_count":2
-    },
-    {
-        "year":2025,
-        "month":11,
-        "ManagerShortName":"稳博",
+        "ManagerShortName":"金戈量锐",
         "record_count":2
     },
     {
@@ -266,7 +308,7 @@
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"倍漾",
+        "ManagerShortName":"佳泽",
         "record_count":1
     },
     {
@@ -290,13 +332,19 @@
     {
         "year":2025,
         "month":11,
+        "ManagerShortName":"国恩",
+        "record_count":1
+    },
+    {
+        "year":2025,
+        "month":11,
         "ManagerShortName":"天演",
         "record_count":1
     },
     {
         "year":2025,
         "month":11,
-        "ManagerShortName":"宽投",
+        "ManagerShortName":"宽德",
         "record_count":1
     },
     {
@@ -326,7 +374,19 @@
     {
         "year":2025,
         "month":11,
+        "ManagerShortName":"灵均",
+        "record_count":1
+    },
+    {
+        "year":2025,
+        "month":11,
         "ManagerShortName":"积沐",
+        "record_count":1
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"致诚卓远",
         "record_count":1
     },
     {
@@ -339,6 +399,12 @@
         "year":2025,
         "month":11,
         "ManagerShortName":"赫富",
+        "record_count":1
+    },
+    {
+        "year":2025,
+        "month":11,
+        "ManagerShortName":"超量子",
         "record_count":1
     },
     {
