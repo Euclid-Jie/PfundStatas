@@ -8,13 +8,31 @@
     {
         "year":2026,
         "month":1,
+        "ManagerShortName":"明汯",
+        "record_count":5
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"进化论",
+        "record_count":5
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"黑翼",
+        "record_count":5
+    },
+    {
+        "year":2026,
+        "month":1,
         "ManagerShortName":"因诺",
         "record_count":4
     },
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"黑翼",
+        "ManagerShortName":"龙旗",
         "record_count":4
     },
     {
@@ -26,7 +44,13 @@
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"进化论",
+        "ManagerShortName":"博润银泰",
+        "record_count":3
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"展弘",
         "record_count":3
     },
     {
@@ -38,7 +62,19 @@
     {
         "year":2026,
         "month":1,
+        "ManagerShortName":"金锝",
+        "record_count":3
+    },
+    {
+        "year":2026,
+        "month":1,
         "ManagerShortName":"世纪前沿",
+        "record_count":2
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"千象",
         "record_count":2
     },
     {
@@ -50,19 +86,7 @@
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"展弘",
-        "record_count":2
-    },
-    {
-        "year":2026,
-        "month":1,
         "ManagerShortName":"托特",
-        "record_count":2
-    },
-    {
-        "year":2026,
-        "month":1,
-        "ManagerShortName":"明汯",
         "record_count":2
     },
     {
@@ -74,13 +98,13 @@
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"金锝",
+        "ManagerShortName":"顽岩",
         "record_count":2
     },
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"顽岩",
+        "ManagerShortName":"鸣熙",
         "record_count":2
     },
     {
@@ -92,8 +116,8 @@
     {
         "year":2026,
         "month":1,
-        "ManagerShortName":"龙旗",
-        "record_count":2
+        "ManagerShortName":"乐水",
+        "record_count":1
     },
     {
         "year":2026,
@@ -111,12 +135,6 @@
         "year":2026,
         "month":1,
         "ManagerShortName":"千衍",
-        "record_count":1
-    },
-    {
-        "year":2026,
-        "month":1,
-        "ManagerShortName":"千象",
         "record_count":1
     },
     {
@@ -146,6 +164,12 @@
     {
         "year":2026,
         "month":1,
+        "ManagerShortName":"宽德",
+        "record_count":1
+    },
+    {
+        "year":2026,
+        "month":1,
         "ManagerShortName":"平方和",
         "record_count":1
     },
@@ -164,6 +188,18 @@
     {
         "year":2026,
         "month":1,
+        "ManagerShortName":"正瀛",
+        "record_count":1
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"灵均",
+        "record_count":1
+    },
+    {
+        "year":2026,
+        "month":1,
         "ManagerShortName":"翰荣",
         "record_count":1
     },
@@ -171,6 +207,12 @@
         "year":2026,
         "month":1,
         "ManagerShortName":"致诚卓远",
+        "record_count":1
+    },
+    {
+        "year":2026,
+        "month":1,
+        "ManagerShortName":"衍复",
         "record_count":1
     },
     {
