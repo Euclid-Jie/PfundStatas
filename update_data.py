@@ -1,74 +1,148 @@
+from __future__ import annotations
+
+import os
+import sqlite3
+from pathlib import Path
+
 import pandas as pd
-import sqlalchemy
-from config import SQL_PASSWORDS, SQL_HOST
-from AutoEmail import AutoEmail, EmailParams
+from sqlalchemy import create_engine, text
 
-engine = sqlalchemy.create_engine(
-    f"mysql+pymysql://dev:{SQL_PASSWORDS}@{SQL_HOST}:3306?charset=utf8"
-)
-with engine.connect() as connection:
-    bench_basic_data = pd.read_sql_query(
-        f"""SELECT 
-                managerName,
-                YEAR(rpi.putOnRecordDate) AS year,
-                MONTH(rpi.putOnRecordDate) AS month,
-                COUNT(*) AS record_count
-            FROM 
-                UpdatedData.raw_pfund_info rpi
-            WHERE 
-                rpi.putOnRecordDate >= '2025-07-01' 
-            GROUP BY 
-                managerName, 
-                YEAR(rpi.putOnRecordDate),
-                MONTH(rpi.putOnRecordDate)
-            ORDER BY record_count DESC""",
+from config import SQL_HOST, SQL_PASSWORDS, SQLITE_PATH
+
+
+ROOT = Path(__file__).resolve().parent
+SQL_USER = "dev"
+SQL_DATABASE = "Euclid"
+SQL_PORT = 3306
+RAW_TABLE = "私募基金备案信息"
+MANAGER_TABLE = "量化私募管理人列表"
+START_DATE = "2024-01-01"
+
+START_TS = pd.Timestamp(START_DATE)
+
+RECORD_COLUMNS = [
+    "fundNo",
+    "fundName",
+    "managerName",
+    "managerShortName",
+    "managerType",
+    "workingState",
+    "putOnRecordDate",
+    "mandatorName",
+    "registerNo",
+]
+
+
+def build_engine():
+    if not SQL_PASSWORDS or not SQL_HOST:
+        return None
+    url = (
+        f"mysql+pymysql://{SQL_USER}:{SQL_PASSWORDS}"
+        f"@{SQL_HOST}:{SQL_PORT}/{SQL_DATABASE}?charset=utf8mb4"
+    )
+    return create_engine(url)
+
+
+def load_from_source() -> pd.DataFrame:
+    engine = build_engine()
+    if engine is None:
+        return pd.DataFrame(columns=RECORD_COLUMNS)
+
+    query = f"""
+        SELECT
+            r.fundNo,
+            r.fundName,
+            r.managerName,
+            m.managerShortName,
+            r.managerType,
+            r.workingState,
+            r.putOnRecordDate,
+            r.mandatorName,
+            r.registerNo
+        FROM `{RAW_TABLE}` r
+        JOIN (
+            SELECT
+                `登记编号` AS registerNo,
+                `管理人简称` AS managerShortName
+            FROM `{MANAGER_TABLE}`
+        ) m ON r.registerNo = m.registerNo
+        WHERE r.putOnRecordDate >= :start_date
+        ORDER BY r.putOnRecordDate DESC, r.fundNo DESC
+    """
+    return pd.read_sql_query(
+        text(query),
         engine,
+        params={"start_date": START_TS.strftime("%Y-%m-%d")},
     )
-company_info = pd.read_sql_query("SELECT * FROM Euclid.量化私募管理人列表", engine)
-bench_basic_data = bench_basic_data.merge(
-    company_info[["协会名称", "管理人简称"]],
-    how="left",
-    left_on="managerName",
-    right_on="协会名称",
-)
-bench_basic_data = bench_basic_data[bench_basic_data["管理人简称"].notna()]
-del bench_basic_data["协会名称"]
-del bench_basic_data["managerName"]
-bench_basic_data = bench_basic_data.groupby(
-    ["year", "month", "管理人简称"], as_index=False
-)["record_count"].sum()
-bench_basic_data.sort_values(
-    by=["year", "month", "record_count"], ascending=[False, False, False], inplace=True
-)
-bench_basic_data.rename(columns={"管理人简称": "ManagerShortName"}, inplace=True)
-bench_basic_data.to_json("data.json", orient="records", force_ascii=False, indent=4)
 
-with engine.connect() as connection:
-    p_info = pd.read_sql_query(
-        f"""SELECT
-            *
-            from
-                UpdatedData.raw_pfund_info rpi
-            where
-                rpi.putOnRecordDate >= "2025-07-01"
-            order by
-                rpi.putOnRecordDate""",
-        engine,
-    )
-p_info.sort_values(by=["putOnRecordDate"], ascending=False)[
-    [
-        "fundNo",
-        "fundName",
-        "managerName",
-        "managerType",
-        "workingState",
-        "putOnRecordDate",
-        "mandatorName",
-    ]
-].to_json("monthlyData.json", orient="records", force_ascii=False, indent=4)
 
-AutoEmail(
-    EmailParams(
-        title="PFund网页已更新", content="https://euclid-jie.github.io/PfundStatas/"
+def normalize_records(records: pd.DataFrame) -> pd.DataFrame:
+    frame = records[RECORD_COLUMNS].copy()
+    frame["putOnRecordDate"] = pd.to_datetime(frame["putOnRecordDate"], errors="coerce")
+    frame = frame.dropna(subset=["putOnRecordDate"])
+    frame = frame[frame["putOnRecordDate"] >= START_TS]
+    frame["putOnRecordDate"] = frame["putOnRecordDate"].dt.strftime("%Y-%m-%d")
+    return frame.fillna("")
+
+
+def init_db(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS records (
+            fund_no TEXT PRIMARY KEY,
+            fund_name TEXT NOT NULL,
+            manager_name TEXT NOT NULL,
+            manager_short_name TEXT,
+            manager_type TEXT,
+            working_state TEXT,
+            put_on_record_date TEXT NOT NULL,
+            mandator_name TEXT,
+            register_no TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_records_date ON records(put_on_record_date);
+        CREATE INDEX IF NOT EXISTS idx_records_manager_month ON records(manager_name, put_on_record_date);
+        CREATE INDEX IF NOT EXISTS idx_records_short_manager_month ON records(manager_short_name, put_on_record_date);
+        """
     )
-)
+
+
+def write_sqlite(records: pd.DataFrame) -> None:
+    SQLITE_PATH.parent.mkdir(exist_ok=True, parents=True)
+    frame = normalize_records(records)
+    with sqlite3.connect(SQLITE_PATH) as conn:
+        init_db(conn)
+        conn.execute("DELETE FROM records")
+        conn.executemany(
+            """
+            INSERT INTO records (
+                fund_no, fund_name, manager_name, manager_short_name,
+                manager_type, working_state, put_on_record_date, mandator_name, register_no
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    row.fundNo,
+                    row.fundName,
+                    row.managerName,
+                    row.managerShortName,
+                    row.managerType,
+                    row.workingState,
+                    row.putOnRecordDate,
+                    row.mandatorName,
+                    row.registerNo,
+                )
+                for row in frame.itertuples(index=False)
+            ],
+        )
+        conn.commit()
+
+
+def main() -> None:
+    records = load_from_source()
+    if not records.empty:
+        write_sqlite(records)
+    print(f"SQLite updated: {SQLITE_PATH}")
+
+
+if __name__ == "__main__":
+    main()

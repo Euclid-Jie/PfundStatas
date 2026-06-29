@@ -1,36 +1,113 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>备案数据统计</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>&#22791;&#26696;&#25968;&#25454;&#23637;&#31034;&#38754;&#26495;</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>备案数据统计</h1>
-    
-    <!-- 表格展示各家总数 -->
-        <h2>各家总数统计</h2>
-    <button id="downloadBtn">下载表格</button>
-    <table id="managerTable">
-        <thead>
-            <tr>
-                <th>年份</th>
-                <th>月份</th>
-                <th>管理人简称</th>
-                <th>新增备案基金数量</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <div id="pagination"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="pulse"></span>
+      <div>
+        <div class="eyebrow">PFUNDSTAS / LOCAL SQLITE</div>
+        <h1>&#31169;&#21215;&#22522;&#37329;&#22791;&#26696;&#25968;&#25454;&#38754;&#26495;</h1>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="chartMeta" class="sync-meta">CONNECTING</span>
+      <button id="themeToggleBtn" class="btn" type="button">浅色</button>
+      <button id="refreshBtn" class="btn" type="button">&#21047;&#26032;</button>
+    </div>
+  </header>
 
-    <!-- 查询指定公司近期数据 -->
-    <h2>查询指定公司近期备案数据</h2>
-    <input type="text" id="companyInput" placeholder="输入公司名称">
-    <button onclick="queryCompanyData()">查询</button>
-    <div id="queryResults"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+  <main class="app-shell">
+    <section class="stats-grid" id="summaryGrid" aria-label="summary"></section>
+
+    <section class="charts-grid" aria-label="charts">
+      <article class="panel panel-main">
+        <div class="panel-head">
+          <div>
+            <h2>&#21608;&#22791;&#26696;&#24635;&#37096;&#36235;&#21183;</h2>
+            <span>&#25353;&#21608;&#32479;&#35745;&#22791;&#26696;&#25968;&#37327;</span>
+          </div>
+        </div>
+        <div class="chart-box chart-box-large">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>&#26376;&#24230;&#22791;&#26696;&#36235;&#21183;</h2>
+            <span>&#25353;&#26376;&#32479;&#35745;&#22791;&#26696;&#25968;&#37327;</span>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel panel-full table-panel">
+      <div class="pivot-toolbar">
+        <div class="pivot-toolbar-copy">
+          <h2>&#31649;&#29702;&#20154;&#26376;&#24230;&#27714;&#21644;</h2>
+          <span>&#25353;&#31649;&#29702;&#20154;&#31616;&#31216;&#25353;&#26376;&#27719;&#24635;&#65292;&#20165;&#32479;&#35745;24&#24180;&#36215;&#30340;&#25968;&#25454;&#65292;&#28857;&#20987;&#26376;&#24230;&#27714;&#21644;&#21487;&#19979;&#36733; Excel&#12290;</span>
+        </div>
+        <div class="pivot-toolbar-actions">
+          <label class="search-field search-field-tight">
+            <span>&#31649;&#29702;&#20154;&#20851;&#38190;&#35789;</span>
+            <input id="managerKeywordInput" type="search" placeholder="&#36755;&#20837;&#31649;&#29702;&#20154;&#21517;&#31216;">
+          </label>
+          <button id="managerPivotExportBtn" class="btn" type="button">&#19979;&#36733; Excel</button>
+        </div>
+      </div>
+      <div class="table-wrap pivot-wrap">
+        <table class="pivot-table">
+          <thead id="managerPivotHead"></thead>
+          <tbody id="managerPivotBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel panel-wide table-panel">
+        <div class="panel-head panel-head-tools">
+          <div>
+            <h2>&#22791;&#26696;&#26126;&#32454;</h2>
+            <span>&#20165;&#25353;&#22522;&#37329;&#21517;&#31216;&#25110;&#31649;&#29702;&#20154;&#20851;&#38190;&#35789;&#26597;&#35810;</span>
+          </div>
+          <label class="search-field">
+            <span>&#20851;&#38190;&#35789;</span>
+            <input id="keywordInput" type="search" placeholder="&#22522;&#37329;&#21517;&#31216; / &#31649;&#29702;&#20154;">
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>&#22791;&#26696;&#26085;&#26399;</th>
+                <th>&#22522;&#37329;&#20195;&#30721;</th>
+                <th>&#22522;&#37329;&#21517;&#31216;</th>
+                <th>&#31649;&#29702;&#20154;</th>
+                <th>&#31649;&#29702;&#31867;&#22411;</th>
+                <th>&#36816;&#20316;&#29366;&#24577;</th>
+                <th>&#22996;&#25176;&#20154;</th>
+              </tr>
+            </thead>
+            <tbody id="recordsBody"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="pager"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

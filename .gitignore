@@ -3,3 +3,6 @@
 __pycache__
 .env
 .vscode
+*.db
+*.sqlite
+*.sqlite3
