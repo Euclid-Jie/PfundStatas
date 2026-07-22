@@ -123,6 +123,7 @@ h1 {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .sync-meta {
@@ -147,6 +148,16 @@ h1 {
 .btn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.filter-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.filter-toggle[aria-pressed="true"]:hover {
+  color: var(--bg);
 }
 
 .btn:disabled {

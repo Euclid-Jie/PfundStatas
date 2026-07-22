@@ -30,6 +30,7 @@ const appState = {
   searchTimer: null,
   managerTimer: null,
   theme: 'dark',
+  scale50Plus: false,
 };
 
 Chart.defaults.font.family = "'JetBrains Mono', 'Noto Sans SC', sans-serif";
@@ -97,6 +98,10 @@ function getManagerFilters() {
   return {
     keyword: document.getElementById('managerKeywordInput').value.trim(),
   };
+}
+
+function addScaleFilter(params) {
+  if (appState.scale50Plus) params.set('scale_50_plus', '1');
 }
 
 function chartScales() {
@@ -231,6 +236,7 @@ async function loadRecords(page = 1) {
     size: String(appState.pageSize),
   });
   if (keyword) params.set('q', keyword);
+  addScaleFilter(params);
   const payload = await apiJson(`/api/records?${params.toString()}`);
   appState.records = payload.items || [];
   appState.page = payload.page || page;
@@ -279,6 +285,7 @@ async function refresh(page = 1, reloadDashboard = true) {
     const { keyword } = getManagerFilters();
     const params = new URLSearchParams();
     if (keyword) params.set('manager_q', keyword);
+    addScaleFilter(params);
     const path = params.toString() ? `/api/dashboard?${params.toString()}` : '/api/dashboard';
     appState.dashboard = await apiJson(path);
     renderSummary(appState.dashboard.summary || {});
@@ -311,12 +318,20 @@ function bindEvents() {
     const { keyword } = getManagerFilters();
     const params = new URLSearchParams();
     if (keyword) params.set('manager_q', keyword);
+    addScaleFilter(params);
     const url = params.toString() ? `/api/manager-pivot.xlsx?${params.toString()}` : '/api/manager-pivot.xlsx';
     window.location.href = url;
   });
 
   bind('themeToggleBtn', 'click', () => {
     applyTheme(appState.theme === 'light' ? 'dark' : 'light');
+  });
+
+  bind('scale50PlusBtn', 'click', async () => {
+    appState.scale50Plus = !appState.scale50Plus;
+    const button = document.getElementById('scale50PlusBtn');
+    button.setAttribute('aria-pressed', String(appState.scale50Plus));
+    await refresh(1, true);
   });
 
   bind('refreshBtn', 'click', async () => {

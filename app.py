@@ -13,6 +13,7 @@ from update_data import START_DATE, init_db
 
 
 ROOT = Path(__file__).resolve().parent
+LARGE_MANAGER_SCALES = ("100亿元以上", "50-100亿元")
 app = Flask(__name__, template_folder=str(ROOT), static_folder=str(ROOT), static_url_path="")
 
 with sqlite3.connect(SQLITE_PATH) as _conn:
@@ -34,9 +35,24 @@ def sum_months(month_rows, months):
     return sum(int(row["record_count"] or 0) for row in month_rows if row["month"] in month_set)
 
 
-def load_manager_rows(conn: sqlite3.Connection, manager_keyword: str = ""):
+def scale_50_plus_enabled() -> bool:
+    return request.args.get("scale_50_plus", "").lower() in {"1", "true", "yes"}
+
+
+def add_scale_filter(conditions: list, params: list, enabled: bool) -> None:
+    if enabled:
+        conditions.append("manager_scale IN (?, ?)")
+        params.extend(LARGE_MANAGER_SCALES)
+
+
+def load_manager_rows(
+    conn: sqlite3.Connection,
+    manager_keyword: str = "",
+    scale_50_plus: bool = False,
+):
     where = ["put_on_record_date >= ?"]
     params = [START_DATE]
+    add_scale_filter(where, params, scale_50_plus)
     if manager_keyword:
         where.append("(manager_short_name LIKE ? OR manager_name LIKE ?)")
         like = f"%{manager_keyword}%"
@@ -173,43 +189,56 @@ def index():
 @app.route("/api/dashboard")
 def dashboard():
     manager_keyword = request.args.get("manager_q", "").strip()
+    scale_50_plus = scale_50_plus_enabled()
+    dashboard_conditions = []
+    dashboard_params = []
+    add_scale_filter(dashboard_conditions, dashboard_params, scale_50_plus)
+    dashboard_where = (
+        f"WHERE {' AND '.join(dashboard_conditions)}" if dashboard_conditions else ""
+    )
 
     with get_conn() as conn:
         summary = conn.execute(
-            """
+            f"""
             SELECT
                 COUNT(*) AS total_records,
                 COUNT(DISTINCT manager_name) AS unique_managers,
                 MAX(put_on_record_date) AS latest_record_date
             FROM records
-            """
+            {dashboard_where}
+            """,
+            dashboard_params,
         ).fetchone()
         weekly = conn.execute(
-            """
+            f"""
             SELECT
                 date(put_on_record_date, '+' || ((5 - strftime('%w', put_on_record_date) + 7) % 7) || ' days') AS week,
                 COUNT(*) AS record_count
             FROM records
+            {dashboard_where}
             GROUP BY week
             ORDER BY week
-            """
+            """,
+            dashboard_params,
         ).fetchall()
         monthly = conn.execute(
-            """
+            f"""
             SELECT
                 substr(put_on_record_date, 1, 7) AS month,
                 COUNT(*) AS record_count
             FROM records
+            {dashboard_where}
             GROUP BY month
             ORDER BY month
-            """
+            """,
+            dashboard_params,
         ).fetchall()
         monthly_rows = rows_to_dicts(monthly)
         month_keys = [row["month"] for row in monthly_rows]
         recent_months = month_keys[-12:]
         current_year = month_keys[-1][:4] if month_keys else None
         ytd_months = [month for month in recent_months if current_year and month.startswith(current_year)]
-        manager_rows = load_manager_rows(conn, manager_keyword)
+        manager_rows = load_manager_rows(conn, manager_keyword, scale_50_plus)
         manager_pivot = build_manager_pivot(manager_rows, 2024)
 
     summary_payload = dict(summary)
@@ -233,9 +262,10 @@ def dashboard():
 @app.route("/api/manager-pivot.xlsx")
 def manager_pivot_xlsx():
     manager_keyword = request.args.get("manager_q", "").strip()
+    scale_50_plus = scale_50_plus_enabled()
 
     with get_conn() as conn:
-        manager_rows = load_manager_rows(conn, manager_keyword)
+        manager_rows = load_manager_rows(conn, manager_keyword, scale_50_plus)
         pivot = build_manager_pivot(manager_rows, 2024)
 
     buffer = build_manager_pivot_workbook(pivot)
@@ -250,11 +280,13 @@ def manager_pivot_xlsx():
 @app.route("/api/records")
 def records():
     keyword = request.args.get("q", "").strip()
+    scale_50_plus = scale_50_plus_enabled()
     page = max(int(request.args.get("page", 1)), 1)
     size = min(max(int(request.args.get("size", 12)), 1), 100)
 
     conditions = []
     params = []
+    add_scale_filter(conditions, params, scale_50_plus)
     if keyword:
         conditions.append("(fund_name LIKE ? OR manager_name LIKE ?)")
         like = f"%{keyword}%"
@@ -278,7 +310,8 @@ def records():
                 working_state AS workingState,
                 put_on_record_date AS putOnRecordDate,
                 mandator_name AS mandatorName,
-                register_no AS registerNo
+                register_no AS registerNo,
+                manager_scale AS managerScale
             FROM records
             {where}
             ORDER BY put_on_record_date DESC, fund_no DESC

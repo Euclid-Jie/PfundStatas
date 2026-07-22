@@ -30,6 +30,7 @@ RECORD_COLUMNS = [
     "putOnRecordDate",
     "mandatorName",
     "registerNo",
+    "managerScale",
 ]
 
 
@@ -58,12 +59,14 @@ def load_from_source() -> pd.DataFrame:
             r.workingState,
             r.putOnRecordDate,
             r.mandatorName,
-            r.registerNo
+            r.registerNo,
+            m.managerScale
         FROM `{RAW_TABLE}` r
         JOIN (
             SELECT
                 `登记编号` AS registerNo,
-                `管理人简称` AS managerShortName
+                `管理人简称` AS managerShortName,
+                `管理规模` AS managerScale
             FROM `{MANAGER_TABLE}`
         ) m ON r.registerNo = m.registerNo
         WHERE r.putOnRecordDate >= :start_date
@@ -97,11 +100,20 @@ def init_db(conn: sqlite3.Connection) -> None:
             working_state TEXT,
             put_on_record_date TEXT NOT NULL,
             mandator_name TEXT,
-            register_no TEXT
+            register_no TEXT,
+            manager_scale TEXT
         );
+        """
+    )
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(records)")}
+    if "manager_scale" not in columns:
+        conn.execute("ALTER TABLE records ADD COLUMN manager_scale TEXT")
+    conn.executescript(
+        """
         CREATE INDEX IF NOT EXISTS idx_records_date ON records(put_on_record_date);
         CREATE INDEX IF NOT EXISTS idx_records_manager_month ON records(manager_name, put_on_record_date);
         CREATE INDEX IF NOT EXISTS idx_records_short_manager_month ON records(manager_short_name, put_on_record_date);
+        CREATE INDEX IF NOT EXISTS idx_records_scale ON records(manager_scale);
         """
     )
 
@@ -116,8 +128,9 @@ def write_sqlite(records: pd.DataFrame) -> None:
             """
             INSERT INTO records (
                 fund_no, fund_name, manager_name, manager_short_name,
-                manager_type, working_state, put_on_record_date, mandator_name, register_no
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                manager_type, working_state, put_on_record_date, mandator_name,
+                register_no, manager_scale
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -130,6 +143,7 @@ def write_sqlite(records: pd.DataFrame) -> None:
                     row.putOnRecordDate,
                     row.mandatorName,
                     row.registerNo,
+                    row.managerScale,
                 )
                 for row in frame.itertuples(index=False)
             ],
