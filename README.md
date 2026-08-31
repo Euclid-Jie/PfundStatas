@@ -1,6 +1,6 @@
 # PfundStatas
 
-本地 Flask + SQLite 私募基金备案数据面板。
+Flask + SQLite 私募基金备案数据面板。本地开发默认使用 5002 端口，生产服务部署在 Zeus。
 
 ## 运行
 
@@ -11,6 +11,28 @@
 ```
 
 开发服务地址：<http://127.0.0.1:5002>
+
+## Zeus 生产环境
+
+生产服务仅监听 Zeus 回环地址 `127.0.0.1:15002`，通过 SSH 隧道访问：
+
+```powershell
+ssh -N -L 127.0.0.1:5002:127.0.0.1:15002 zeus
+```
+
+代码提交并推送到 `origin/master` 后，执行以下命令部署：
+
+```powershell
+ssh zeus /usr/local/sbin/deploy-pfund-statas
+```
+
+只更新备案数据、不修改代码时，执行：
+
+```powershell
+ssh zeus systemctl start pfund-statas-update.service
+```
+
+Zeus 的目录结构、完整发布流程、状态检查、日志和回滚方法见 [Zeus 运维手册](docs/zeus-operations.md)。
 
 ## 数据说明
 
