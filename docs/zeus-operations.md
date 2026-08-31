@@ -8,15 +8,18 @@
 云 MySQL（VPC 内网）
   -> Zeus 上的 update_data.py
   -> /var/lib/pfund-statas/data/pfund.db
-  -> Gunicorn 127.0.0.1:15002
-  -> SSH 隧道
-  -> 本机 127.0.0.1:5002
+  -> Gunicorn 127.0.0.1:25002
+  -> Nginx 0.0.0.0:15002
+  -> 公网 http://120.48.74.113:15002/
+     或 SSH 隧道到本机 127.0.0.1:5002
 ```
 
 - Web 请求只读取 Zeus 本地 SQLite，不会在每次请求时访问云数据库。
 - `update_data.py` 在 Zeus 上直接查询云数据库并更新 Zeus 本地的 `pfund.db`。
 - 本地开发目录中的 `data/pfund.db` 不会上传或同步到 Zeus。
-- 生产服务不直接开放 15002 公网访问，也不再使用 `pfundstatas` FRP 代理。
+- Nginx 对公网开放 15002；Gunicorn 仅监听回环地址 25002，不直接暴露到公网。
+- 生产服务不再使用 `pfundstatas` FRP 代理。
+- 当前公网入口使用 HTTP，没有 HTTPS 或登录认证，任何能访问该 IP 和端口的人都能打开页面。
 - 当前没有自动更新数据的 timer；数据更新由管理员手动触发。
 
 ## 2. 生产目录和服务
@@ -32,6 +35,9 @@
 | 数据更新 systemd 服务 | `pfund-statas-update.service` |
 | Web systemd 文件 | `/etc/systemd/system/pfund-statas.service` |
 | 数据更新 systemd 文件 | `/etc/systemd/system/pfund-statas-update.service` |
+| Nginx 配置 | `/etc/nginx/conf.d/pfund-statas.conf` |
+| Nginx 访问日志 | `/var/log/nginx/pfund-statas.access.log` |
+| Nginx 错误日志 | `/var/log/nginx/pfund-statas.error.log` |
 
 代码目录和部署脚本由 `root` 管理；Web 和数据更新进程使用无登录权限的 `pfund-statas` 用户运行。`.env` 和 `pfund.db` 不属于 Git checkout，不会被 `git pull` 覆盖。
 
@@ -66,7 +72,7 @@ ssh zeus /usr/local/sbin/deploy-pfund-statas
 3. 安装 `requirements.txt` 中的依赖，并确保生产环境使用 `gunicorn==23.0.0`。
 4. 对 `app.py`、`config.py` 和 `update_data.py` 执行 Python 语法检查。
 5. 重启 `pfund-statas.service`。
-6. 最多等待 15 秒，检查 `http://127.0.0.1:15002/api/dashboard`。
+6. 最多等待 15 秒，通过 Nginx 检查 `http://127.0.0.1:15002/api/dashboard`。
 
 部署成功时会输出切换前后的 Git commit。代码部署不会自动运行 `update_data.py`，也不会改变 `.env` 或 `pfund.db`。
 
@@ -110,13 +116,15 @@ ssh zeus "journalctl -u pfund-statas-update.service -n 30 --no-pager"
 
 ## 5. 访问生产页面
 
-在本机 PowerShell 中建立 SSH 隧道：
+公网可直接访问：<http://120.48.74.113:15002/>。
+
+也可以在本机 PowerShell 中建立 SSH 隧道：
 
 ```powershell
 ssh -N -L 127.0.0.1:5002:127.0.0.1:15002 zeus
 ```
 
-保持该窗口运行，然后打开 <http://127.0.0.1:5002>。如果 5002 已被占用，先检查占用进程：
+保持该窗口运行，然后打开 <http://127.0.0.1:5002>。该隧道连接到 Zeus 的 Nginx 入口。如果 5002 已被占用，先检查占用进程：
 
 ```powershell
 Get-NetTCPConnection -State Listen -LocalPort 5002
@@ -126,19 +134,21 @@ Get-NetTCPConnection -State Listen -LocalPort 5002
 
 ## 6. 状态和日志检查
 
-检查 Web 服务和监听端口：
+检查 Web、Nginx 服务和监听端口：
 
 ```powershell
 ssh zeus "systemctl status pfund-statas.service --no-pager"
-ssh zeus "ss -ltnp | grep ':15002'"
+ssh zeus "systemctl status nginx.service --no-pager"
+ssh zeus "ss -ltnp | grep -E ':(15002|25002)'"
 ```
 
-正常情况下，`pfund-statas.service` 为 `active (running)`，15002 由 Gunicorn 监听在 `127.0.0.1`，而不是 `0.0.0.0`。
+正常情况下，两个服务均为 `active (running)`；Nginx 监听 `0.0.0.0:15002` 和 `[::]:15002`，Gunicorn 只监听 `127.0.0.1:25002`。
 
 查看 Web 服务最近日志：
 
 ```powershell
 ssh zeus "journalctl -u pfund-statas.service -n 100 --no-pager"
+ssh zeus "tail -n 100 /var/log/nginx/pfund-statas.error.log"
 ```
 
 直接在 Zeus 上检查接口：
